@@ -943,6 +943,12 @@ body.no-scroll { overflow: hidden; }
 }
 
 /* ---------------------------------------------------------------- 响应式 */
+/* 导航有 10 项：中等宽度下略缩字号，保证顶栏不换行、不被撑高 */
+@media (min-width: 901px) and (max-width: 1150px) {
+  .nav-link { padding: 6px 8px; font-size: .82rem; }
+  .brand-text { display: none; }
+}
+
 @media (max-width: 900px) {
   .hero-inner { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .hero-media { order: -1; justify-content: flex-start; }
