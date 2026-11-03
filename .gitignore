@@ -1,0 +1,22 @@
+# ---- 系统与编辑器 ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# ---- 临时文件与打包产物 ----
+*.zip
+*.tar.gz
+*.log
+tmp/
+temp/
+dom.html
+
+# ---- 本地预览 / 部署缓存 ----
+.deploy-cache/
+build/
+
+# 说明：本仓库就是要提交源码、图片、文档与部署脚本，
+# 因此不忽略 assets/、docs/、deploy/ 目录。

@@ -1,6 +1,12 @@
 /* =====================================================================
-   页面渲染逻辑 —— 读取 content.js 里的内容，生成整个页面。
-   正常情况下你不需要改这个文件；改内容请打开 content.js。
+   main.js —— 页面渲染逻辑：读取 content.js 里的内容，生成整个页面。
+   改文字请打开 content.js；这个文件只在「想调整板块顺序」时才需要动。
+
+   v2 改动（求职导向）：
+     · 新增 renderEducation / renderCourses / renderCerts 三个板块
+     · 项目卡片支持「角色 / 时间 / 技术栈 / 关键工作」等字段
+     · 板块顺序调整为：首屏 → 关于我 → 教育背景 → 技能 → 项目经历
+                        → 主修课程 → 证书荣誉 → 成长轨迹 → 校园生活 → 最近在学 → 联系
    ===================================================================== */
 
 (function () {
@@ -65,8 +71,8 @@
     return out;
   }
 
-  function chips(items) {
-    return el('ul', { class: 'chips' }, items.map(function (item) {
+  function chips(items, extraClass) {
+    return el('ul', { class: 'chips' + (extraClass ? ' ' + extraClass : '') }, items.map(function (item) {
       return el('li', { class: 'chip', text: item });
     }));
   }
@@ -107,11 +113,7 @@
       ]));
     }
 
-    var name = el('h1', {
-      class: 'hero-name',
-      text: h.name,
-      'data-text': h.name + (h.nameAccent || '')
-    });
+    var name = el('h1', { class: 'hero-name', text: h.name });
     if (h.nameAccent) name.appendChild(el('span', { class: 'grad', text: h.nameAccent }));
     text.appendChild(name);
 
@@ -195,43 +197,36 @@
     return shell.section;
   }
 
-  /* ---------------------------------------------------------------- 技能 */
-  function renderLife() {
-    var d = S.life;
+  /* ---------------------------------------------------------------- 教育背景 */
+  function renderEducation() {
+    var d = S.education;
     if (!d || !hasList(d.items)) return null;
-    var shell = sectionShell('life', d);
+    var shell = sectionShell('education', d);
     if (!shell) return null;
 
-    shell.body.appendChild(el('ol', { class: 'schedule' }, d.items.map(function (item) {
-      var row = el('li', { class: 'schedule-row' }, [
-        el('span', { class: 'schedule-time', text: item.time }),
-        el('span', { class: 'schedule-node', 'aria-hidden': 'true' })
-      ]);
-      var box = el('div', { class: 'schedule-body' });
-      var head = el('div', { class: 'schedule-head' }, [
-        el('h3', { class: 'schedule-title', text: item.title })
-      ]);
-      if (item.tag) head.appendChild(el('span', { class: 'chip chip-tag', text: item.tag }));
-      box.appendChild(head);
-      if (item.desc) box.appendChild(el('p', { class: 'schedule-desc', text: item.desc }));
-      row.appendChild(box);
-      return row;
-    })));
-    return shell.section;
-  }
+    shell.body.appendChild(el('div', { class: 'edu-list' }, d.items.map(function (item) {
+      var card = el('article', { class: 'card edu-card' });
 
-  /* ---------------------------------------------------------------- 最近在玩 */
-  function renderNow() {
-    var d = S.now;
-    if (!d || !hasList(d.items)) return null;
-    var shell = sectionShell('now', d);
-    if (!shell) return null;
+      var head = el('div', { class: 'edu-head' }, [
+        el('h3', { class: 'edu-school', text: item.school })
+      ]);
+      if (item.period) head.appendChild(el('span', { class: 'edu-period', text: item.period }));
+      card.appendChild(head);
 
-    shell.body.appendChild(el('div', { class: 'now-grid' }, d.items.map(function (item) {
-      var card = el('div', { class: 'card now-card' });
-      if (item.label) card.appendChild(el('p', { class: 'now-label', text: item.label }));
-      if (item.value) card.appendChild(el('p', { class: 'now-value', text: item.value }));
-      if (item.note) card.appendChild(el('p', { class: 'now-note', text: item.note }));
+      if (item.major) card.appendChild(el('p', { class: 'edu-major', text: item.major }));
+      if (item.detail) card.appendChild(el('p', { class: 'edu-detail', text: item.detail }));
+
+      if (hasList(item.highlights)) {
+        card.appendChild(el('ul', { class: 'edu-highlights' }, item.highlights.map(function (line) {
+          return el('li', { text: line });
+        })));
+      }
+
+      if (item.gpa) {
+        card.appendChild(el('p', { class: 'edu-extra' }, [
+          el('span', { class: 'chip chip-tag', text: item.gpa })
+        ]));
+      }
       return card;
     })));
     return shell.section;
@@ -253,7 +248,7 @@
     return shell.section;
   }
 
-  /* ---------------------------------------------------------------- 作品 */
+  /* ---------------------------------------------------------------- 项目经历 */
   function renderProjects() {
     var p = S.projects;
     if (!p || !hasList(p.items)) return null;
@@ -273,13 +268,23 @@
       }
 
       var info = el('div', { class: 'project-info' });
-      if (hasList(item.tags)) {
-        info.appendChild(el('ul', { class: 'chips chips-small' }, item.tags.map(function (tag) {
-          return el('li', { class: 'chip', text: tag });
+
+      var head = el('div', { class: 'project-head' }, [
+        el('h3', { class: 'project-title', text: item.title })
+      ]);
+      var metaText = [item.role, item.period].filter(Boolean).join(' · ');
+      if (metaText) head.appendChild(el('p', { class: 'project-meta', text: metaText }));
+      info.appendChild(head);
+
+      if (hasList(item.stack)) info.appendChild(chips(item.stack, 'chips-small'));
+      if (item.desc) info.appendChild(el('p', { class: 'project-desc', text: item.desc }));
+
+      if (hasList(item.highlights)) {
+        info.appendChild(el('ul', { class: 'project-highlights' }, item.highlights.map(function (line) {
+          return el('li', { text: line });
         })));
       }
-      info.appendChild(el('h3', { class: 'project-title', text: item.title }));
-      if (item.desc) info.appendChild(el('p', { class: 'project-desc', text: item.desc }));
+
       if (item.link) {
         info.appendChild(el('a', {
           class: 'link-arrow',
@@ -295,7 +300,70 @@
     return shell.section;
   }
 
-  /* ---------------------------------------------------------------- 时间线 */
+  /* ---------------------------------------------------------------- 主修课程 */
+  function renderCourses() {
+    var c = S.courses;
+    if (!c || !hasList(c.groups)) return null;
+    var shell = sectionShell('courses', c);
+    if (!shell) return null;
+
+    shell.body.appendChild(el('div', { class: 'course-grid' }, c.groups.map(function (group) {
+      var card = el('section', { class: 'card course-group' });
+      card.appendChild(el('h3', { class: 'course-group-name', text: group.name }));
+      if (hasList(group.items)) {
+        card.appendChild(el('ul', { class: 'course-list' }, group.items.map(function (course) {
+          var li = el('li', { class: 'course-item' });
+          var line = el('div', { class: 'course-line' }, [
+            el('strong', { class: 'course-name', text: course.name })
+          ]);
+          if (course.meta) line.appendChild(el('span', { class: 'course-meta', text: course.meta }));
+          li.appendChild(line);
+          if (course.note) li.appendChild(el('p', { class: 'course-note', text: course.note }));
+          return li;
+        })));
+      }
+      return card;
+    })));
+    return shell.section;
+  }
+
+  /* ---------------------------------------------------------------- 证书与荣誉 */
+  function renderCerts() {
+    var c = S.certs;
+    if (!c || !hasList(c.items)) return null;
+    var shell = sectionShell('certs', c);
+    if (!shell) return null;
+
+    shell.body.appendChild(el('ul', { class: 'cert-list' }, c.items.map(function (item) {
+      var li = el('li', { class: 'card cert-item' });
+
+      var main = el('div', { class: 'cert-main' }, [
+        el('h3', { class: 'cert-name', text: item.name })
+      ]);
+      if (item.org) main.appendChild(el('p', { class: 'cert-org', text: item.org }));
+      li.appendChild(main);
+
+      var side = el('div', { class: 'cert-side' });
+      if (item.status) side.appendChild(el('span', { class: 'chip cert-status', text: item.status }));
+      if (item.date) side.appendChild(el('span', { class: 'cert-date', text: item.date }));
+      li.appendChild(side);
+
+      if (item.note) li.appendChild(el('p', { class: 'cert-note', text: item.note }));
+      if (item.link) {
+        li.appendChild(el('a', {
+          class: 'link-arrow',
+          href: item.link,
+          target: '_blank',
+          rel: 'noopener',
+          text: '查看证书 ↗'
+        }));
+      }
+      return li;
+    })));
+    return shell.section;
+  }
+
+  /* ---------------------------------------------------------------- 成长轨迹 */
   function renderTimeline() {
     var t = S.timeline;
     if (!t || !hasList(t.items)) return null;
@@ -317,7 +385,7 @@
     return shell.section;
   }
 
-  /* ---------------------------------------------------------------- 相册 */
+  /* ---------------------------------------------------------------- 校园相册 */
   function renderGallery() {
     var g = S.gallery;
     if (!g || !hasList(g.items)) return null;
@@ -331,6 +399,23 @@
       ]));
       if (item.caption) figure.appendChild(el('figcaption', { text: item.caption }));
       return figure;
+    })));
+    return shell.section;
+  }
+
+  /* ---------------------------------------------------------------- 最近在学 */
+  function renderNow() {
+    var d = S.now;
+    if (!d || !hasList(d.items)) return null;
+    var shell = sectionShell('now', d);
+    if (!shell) return null;
+
+    shell.body.appendChild(el('div', { class: 'now-grid' }, d.items.map(function (item) {
+      var card = el('div', { class: 'card now-card' });
+      if (item.label) card.appendChild(el('p', { class: 'now-label', text: item.label }));
+      if (item.value) card.appendChild(el('p', { class: 'now-value', text: item.value }));
+      if (item.note) card.appendChild(el('p', { class: 'now-note', text: item.note }));
+      return card;
     })));
     return shell.section;
   }
@@ -420,7 +505,7 @@
       var dark = root.getAttribute('data-theme') !== 'light';
       if (icon) icon.textContent = dark ? '☀' : '☾';
       if (toggle) toggle.setAttribute('aria-label', dark ? '切换到亮色主题' : '切换到暗色主题');
-      if (meta) meta.setAttribute('content', dark ? '#0b0d12' : '#f5f6fa');
+      if (meta) meta.setAttribute('content', dark ? '#0b1220' : '#f7f8fa');
     }
 
     if (toggle) {
@@ -556,55 +641,27 @@
     });
   }
 
-  /* ---------------------------------------------------------------- 跟随鼠标的光标特效 */
+  /* ---------------------------------------------------------------- 跟随鼠标的微光（默认很淡，纯装饰） */
   function setupCursorFX() {
     var fx = document.getElementById('fx');
     if (!fx) return;
     var root = document.documentElement;
     var glow = fx.querySelector('.fx-glow');
-    var ring = fx.querySelector('.fx-ring');
-    var dot = fx.querySelector('.fx-dot');
     var fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
 
-    /* 系统里开了"减少动态效果"：只留一层很淡的网格，不做任何光标效果 */
-    if (prefersReducedMotion()) {
-      fx.classList.add('fx-reduced');
-      return;
-    }
-
-    /* 触屏设备（手机/平板）没有鼠标指针：网格淡一些，手指按下去在按点处亮一下 */
-    if (!fine) {
+    if (prefersReducedMotion() || !fine) {
       fx.classList.add('fx-static');
-      var pulseTimer = null;
-      var pulseAt = function (x, y) {
-        root.style.setProperty('--mx', x + 'px');
-        root.style.setProperty('--my', y + 'px');
-        [glow, ring, dot].forEach(function (node) {
-          if (node) node.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
-        });
-        fx.classList.add('is-touch');
-        window.clearTimeout(pulseTimer);
-        pulseTimer = window.setTimeout(function () { fx.classList.remove('is-touch'); }, 900);
-      };
-      window.addEventListener('pointerdown', function (event) {
-        pulseAt(event.clientX, event.clientY);
-      }, { passive: true });
-      window.addEventListener('touchstart', function (event) {
-        var touch = event.touches && event.touches[0];
-        if (touch) pulseAt(touch.clientX, touch.clientY);
-      }, { passive: true });
       return;
     }
 
-    var target = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.34 };
+    var target = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.3 };
     var glowPos = { x: target.x, y: target.y };
-    var ringPos = { x: target.x, y: target.y };
     var idleTimer = null;
 
     function wake() {
       fx.classList.add('is-active');
       window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(function () { fx.classList.remove('is-active'); }, 2400);
+      idleTimer = window.setTimeout(function () { fx.classList.remove('is-active'); }, 1600);
     }
 
     window.addEventListener('pointermove', function (event) {
@@ -613,7 +670,6 @@
       target.y = event.clientY;
       root.style.setProperty('--mx', event.clientX + 'px');
       root.style.setProperty('--my', event.clientY + 'px');
-      if (dot) dot.style.transform = 'translate3d(' + event.clientX + 'px,' + event.clientY + 'px,0)';
       var interactive = event.target && event.target.closest
         ? event.target.closest('a, button, input, textarea, select, label')
         : null;
@@ -621,28 +677,16 @@
       wake();
     }, { passive: true });
 
-    window.addEventListener('pointerdown', function () {
-      fx.classList.add('is-click');
-      window.setTimeout(function () { fx.classList.remove('is-click'); }, 280);
-      wake();
-    });
-
     document.addEventListener('mouseleave', function () {
       fx.classList.remove('is-active', 'is-hover');
     });
 
     (function loop() {
-      glowPos.x += (target.x - glowPos.x) * 0.075;
-      glowPos.y += (target.y - glowPos.y) * 0.075;
-      ringPos.x += (target.x - ringPos.x) * 0.22;
-      ringPos.y += (target.y - ringPos.y) * 0.22;
+      glowPos.x += (target.x - glowPos.x) * 0.06;
+      glowPos.y += (target.y - glowPos.y) * 0.06;
       if (glow) {
         glow.style.transform = 'translate3d(' + glowPos.x.toFixed(1) + 'px,' +
           glowPos.y.toFixed(1) + 'px,0)';
-      }
-      if (ring) {
-        ring.style.transform = 'translate3d(' + ringPos.x.toFixed(1) + 'px,' +
-          ringPos.y.toFixed(1) + 'px,0)';
       }
       window.requestAnimationFrame(loop);
     })();
@@ -677,8 +721,9 @@
     var hero = renderHero();
     if (hero) app.appendChild(hero);
 
-    [renderAbout(), renderLife(), renderSkills(), renderProjects(),
-     renderTimeline(), renderGallery(), renderNow()]
+    /* 板块顺序＝求职时 HR 的阅读顺序：关于 → 教育 → 技能 → 项目 → 课程 → 证书 → 成长 → 生活 → 在学 */
+    [renderAbout(), renderEducation(), renderSkills(), renderProjects(),
+     renderCourses(), renderCerts(), renderTimeline(), renderGallery(), renderNow()]
       .forEach(function (section) { if (section) app.appendChild(section); });
 
     var custom = renderCustom();

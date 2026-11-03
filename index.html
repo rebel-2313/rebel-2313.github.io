@@ -5,28 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- ============================================================
-     这些标题和描述也会被搜索引擎、微信/QQ 分享时抓取。
-     改文字请打开 assets/js/content.js （meta 那一段）。
+     页面里的文字内容都在 assets/js/content.js，改内容不用动这个文件。
+     这里只放「浏览器和搜索引擎读的」静态信息：标题、描述、图标、结构化数据。
+     改完记得让这里的 title 与 content.js 里的 meta.title 保持一致。
      ============================================================ -->
-<title>我的个人网站</title>
-<meta name="description" content="你好，这里是我的个人网站。">
-<meta name="author" content="">
-<meta name="theme-color" content="#05060f">
+<title>杨叶珥 | 计算机科学与技术 · 个人主页</title>
+<meta name="description" content="杨叶珥的个人主页：教育背景、专业技能、项目经历、主修课程与证书荣誉，以及联系方式。">
+<meta name="author" content="杨叶珥">
+<meta name="keywords" content="杨叶珥, 个人主页, 计算机科学与技术, 简历, 项目经历">
+<meta name="theme-color" content="#0b1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="我的网站">
+<meta name="apple-mobile-web-app-title" content="杨叶珥">
 <meta name="mobile-web-app-capable" content="yes">
-<meta property="og:type" content="website">
-<meta property="og:title" content="我的个人网站">
-<meta property="og:description" content="你好，这里是我的个人网站。">
+<meta name="robots" content="index, follow">
+
+<!-- 分享到微信 / QQ / 微博时显示的卡片信息 -->
+<meta property="og:type" content="profile">
+<meta property="og:title" content="杨叶珥 | 计算机科学与技术 · 个人主页">
+<meta property="og:description" content="教育背景、专业技能、项目经历、主修课程与证书荣誉，以及联系方式。">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
 
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/css/style.css">
 
+<!-- 结构化数据：帮助搜索引擎把你的主页识别成「一个人」，搜索结果更规范 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "杨叶珥",
+  "description": "计算机科学与技术专业在读本科生，个人主页。",
+  "alumniOf": { "@type": "CollegeOrUniversity", "name": "【待填：学校全称】" },
+  "knowsAbout": ["C 语言", "Python", "Java", "HTML", "CSS", "JavaScript", "Git", "MySQL"],
+  "email": "mailto:1409163540@qq.com"
+}
+</script>
+
 <script>
-  /* 提前决定亮色/暗色，避免刷新时闪一下白屏。
-     默认跟随系统设置；你手动切换过之后会记住你的选择。 */
+  /* 提前决定亮色 / 暗色，避免刷新时闪一下白屏。
+     默认跟随系统设置；手动切换过之后会记住你的选择。 */
   (function () {
     try {
       var saved = localStorage.getItem('site-theme');
@@ -43,20 +63,16 @@
 <body id="top">
 <a class="skip-link" href="#main">跳到主要内容</a>
 
-<!-- 跟随鼠标的霓虹光晕 / 光标 / 网格背景（纯装饰，不影响点击） -->
+<!-- 背景微光（纯装饰，不影响点击） -->
 <div class="fx" id="fx" aria-hidden="true">
-  <div class="fx-grid"></div>
   <div class="fx-glow"></div>
-  <div class="fx-scan"></div>
-  <div class="fx-ring"></div>
-  <div class="fx-dot"></div>
 </div>
 
 <header class="site-header" id="siteHeader">
   <div class="container header-inner">
     <a class="brand" href="#top" aria-label="回到顶部">
       <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-text" id="brandText">我的网站</span>
+      <span class="brand-text" id="brandText">杨叶珥</span>
     </a>
 
     <nav class="nav" id="siteNav" aria-label="主导航"></nav>
@@ -89,14 +105,15 @@
 
 <noscript>
   <div class="container noscript">
-    <h1>你好 👋</h1>
-    <p>这个页面需要开启 JavaScript 才能显示完整内容。请在浏览器设置里允许运行 JavaScript 后刷新。</p>
+    <h1>杨叶珥 · 计算机科学与技术</h1>
+    <p>本页内容由 JavaScript 渲染，请开启浏览器的 JavaScript 后刷新。</p>
+    <p>也可以直接查看纯文本版简历：<a href="resume.md">resume.md</a></p>
   </div>
 </noscript>
 
-<!-- 你的全部内容都在这个文件里，改它就行 -->
+<!-- 内容层：改这一个文件就能改全站文字 -->
 <script src="assets/js/content.js"></script>
-<!-- 页面渲染逻辑，一般不用动 -->
+<!-- 渲染层：一般不用动 -->
 <script src="assets/js/main.js"></script>
 </body>
 </html>
