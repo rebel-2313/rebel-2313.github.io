@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ============================================================
+     这些标题和描述也会被搜索引擎、微信/QQ 分享时抓取。
+     改文字请打开 assets/js/content.js （meta 那一段）。
+     ============================================================ -->
+<title>我的个人网站</title>
+<meta name="description" content="你好，这里是我的个人网站。">
+<meta name="author" content="">
+<meta name="theme-color" content="#05060f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="我的网站">
+<meta name="mobile-web-app-capable" content="yes">
+<meta property="og:type" content="website">
+<meta property="og:title" content="我的个人网站">
+<meta property="og:description" content="你好，这里是我的个人网站。">
+
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<script>
+  /* 提前决定亮色/暗色，避免刷新时闪一下白屏。
+     默认跟随系统设置；你手动切换过之后会记住你的选择。 */
+  (function () {
+    try {
+      var saved = localStorage.getItem('site-theme');
+      var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      var theme = saved || (prefersLight ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+</script>
+</head>
+
+<body id="top">
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<!-- 跟随鼠标的霓虹光晕 / 光标 / 网格背景（纯装饰，不影响点击） -->
+<div class="fx" id="fx" aria-hidden="true">
+  <div class="fx-grid"></div>
+  <div class="fx-glow"></div>
+  <div class="fx-scan"></div>
+  <div class="fx-ring"></div>
+  <div class="fx-dot"></div>
+</div>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a class="brand" href="#top" aria-label="回到顶部">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text" id="brandText">我的网站</span>
+    </a>
+
+    <nav class="nav" id="siteNav" aria-label="主导航"></nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="切换亮色/暗色主题">
+        <span class="theme-icon" aria-hidden="true"></span>
+      </button>
+      <button class="icon-btn menu-btn" id="menuToggle" type="button"
+              aria-label="展开导航菜单" aria-expanded="false" aria-controls="siteNav">
+        <span class="menu-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><span id="scrollProgress"></span></div>
+</header>
+
+<main id="main"></main>
+
+<footer class="site-footer" id="siteFooter"></footer>
+
+<button class="to-top" id="toTop" type="button" aria-label="回到顶部" hidden>
+  <span aria-hidden="true">↑</span>
+</button>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="图片预览" hidden>
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="关闭">✕</button>
+  <img id="lightboxImg" alt="">
+</div>
+
+<noscript>
+  <div class="container noscript">
+    <h1>你好 👋</h1>
+    <p>这个页面需要开启 JavaScript 才能显示完整内容。请在浏览器设置里允许运行 JavaScript 后刷新。</p>
+  </div>
+</noscript>
+
+<!-- 你的全部内容都在这个文件里，改它就行 -->
+<script src="assets/js/content.js"></script>
+<!-- 页面渲染逻辑，一般不用动 -->
+<script src="assets/js/main.js"></script>
+</body>
+</html>
