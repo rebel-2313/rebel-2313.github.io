@@ -17,7 +17,7 @@
 
 | 想做什么 | 怎么做 |
 | --- | --- |
-| 本地看效果 | 双击 `index.html`（或双击 `启动本地预览.bat` 起一个本地服务器） |
+| 本地看效果 | 双击 `index.html`（或双击 `启动本地预览.bat`，默认地址 `http://localhost:5180/`） |
 | 改文字内容 | 只改 `assets/js/content.js`，保存后刷新浏览器 |
 | 改配色 | 只改 `assets/css/style.css` 顶部的 `--accent` |
 | 换成自己的照片 | 图片放进 `assets/img/`，再把 `content.js` 里的 `avatar` 改成新文件名 |

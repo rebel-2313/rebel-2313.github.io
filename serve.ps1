@@ -4,10 +4,20 @@
 #  它会同时打印两个网址：
 #    · 本地访问：只在这台电脑上能打开
 #    · 局域网访问：同一个 WiFi/路由器下的手机、朋友电脑都能打开
+#
+#  v3 修复（2026-11-03）：
+#    以前默认用 8080，且允许端口复用，一旦 8080 已被别的程序（例如另一个
+#    项目的预览服务）占用，本脚本会"假装"绑定成功，但浏览器请求被那个程序
+#    接走，于是看到的是别人的页面。
+#    现在改为：
+#      1) 默认端口 5180，避开最常见的 8080/3000/8000 冲突；
+#      2) 先真实探测端口是否有人应答，有人应答就直接换下一个；
+#      3) 绑定时强制独占（ExclusiveAddressUse = $true），绝不与别的程序共用；
+#      4) 启动后打印的端口就是实际在用的端口，并在控制台回显"跳过 xx 端口"。
 # =====================================================================
 
 param(
-    [int]$Port = 8080,
+    [int]$Port = 5180,
     [switch]$NoBrowser
 )
 
@@ -67,24 +77,47 @@ function Send-Text($stream, [int]$status, [string]$reason, [string]$text) {
     Send-Bytes $stream $status $reason $body 'text/plain; charset=utf-8'
 }
 
+# 探测某个端口是否已经有程序在监听（有程序应答 → 说明被占用）
+function Test-PortOccupied([int]$p) {
+    $client = New-Object System.Net.Sockets.TcpClient
+    try {
+        $iar = $client.BeginConnect('127.0.0.1', $p, $null, $null)
+        if ($iar.AsyncWaitHandle.WaitOne(200)) {
+            $client.EndConnect($iar)
+            return $true
+        }
+        return $false
+    } catch {
+        # 连接被拒绝 = 没有程序在听，可以放心用
+        return $false
+    } finally {
+        try { $client.Close() } catch { }
+    }
+}
+
 # ---------------------------------------------------------------- 启动监听
 $listener = $null
-for ($try = $Port; $try -le ($Port + 10); $try++) {
+$skipped = @()
+for ($try = $Port; $try -le ($Port + 20); $try++) {
+    if (Test-PortOccupied $try) {
+        $skipped += $try
+        continue
+    }
     try {
         $candidate = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Any, $try)
-        # 允许端口处于 TIME_WAIT 时也能重新绑定，重启脚本时不用换端口
-        $candidate.Server.ExclusiveAddressUse = $false
+        # 关键：独占绑定，绝不和别的程序共用同一端口，避免"抢到了端口却看到别人页面"
+        $candidate.Server.ExclusiveAddressUse = $true
         $candidate.Start()
         $listener = $candidate
         $Port = $try
         break
     } catch {
-        if ($try -eq $Port) { Write-Host "端口 $try 被占用，试着换一个…" -ForegroundColor Yellow }
+        $skipped += $try
     }
 }
 
 if ($null -eq $listener) {
-    Write-Host '没有找到可用端口，请稍后重试。' -ForegroundColor Red
+    Write-Host ('{0}-{1} 范围内的端口都不可用，请稍后重试。' -f $Port, ($Port + 20)) -ForegroundColor Red
     Read-Host '按回车退出'
     exit 1
 }
@@ -112,22 +145,28 @@ function Get-LanAddresses {
 $lanIps = Get-LanAddresses
 
 Write-Host ''
-Write-Host '  个人网站 · 本地预览' -ForegroundColor Cyan
+Write-Host '  杨叶珥 · 个人网站 本地预览' -ForegroundColor Cyan
 Write-Host '  ------------------------------'
 Write-Host ("  文件夹：{0}" -f $root)
+if ($skipped.Count -gt 0) {
+    Write-Host ("  已跳过被占用的端口：{0}（可能开着别的项目的预览服务）" -f ($skipped -join ', ')) -ForegroundColor Yellow
+}
 Write-Host ''
 Write-Host ("  本地打开：    http://localhost:{0}/" -f $Port) -ForegroundColor Green
 foreach ($ip in $lanIps) {
     Write-Host ("  局域网打开：  http://{0}:{1}/     ← 同一个 WiFi 下的手机/朋友用这个" -f $ip, $Port) -ForegroundColor Green
 }
 Write-Host ''
-Write-Host '  提示：如果局域网打不开，通常是 Windows 防火墙拦了 —— 在弹出的'
-Write-Host '        提示里点「允许访问」即可（专用网络就行）。'
+Write-Host '  提示 1：请用上面打印的端口访问。如果你以前习惯打开 8080，那个端口'
+Write-Host '          现在可能属于别的程序，会显示成别人的页面。'
+Write-Host '  提示 2：局域网打不开通常是 Windows 防火墙拦了，在提示里点「允许访问」。'
 Write-Host '  停止：按 Ctrl+C 或直接关掉这个窗口。'
 Write-Host ''
 
 if (-not $NoBrowser) {
-    try { Start-Process ("http://localhost:{0}/" -f $Port) | Out-Null } catch { }
+    # 加一个随机参数，避免浏览器拿旧缓存
+    $url = ("http://localhost:{0}/?t={1}" -f $Port, [DateTime]::Now.Ticks)
+    try { Start-Process $url | Out-Null } catch { }
 }
 
 # ---------------------------------------------------------------- 请求循环
