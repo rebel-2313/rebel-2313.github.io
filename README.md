@@ -66,7 +66,7 @@ personal-site/
 | 内容填充 | ⚠️ 学校/学院/专业/意向已填，项目、证书、联系方式待本人补（见 `docs/08-待填写清单.md`） |
 | Markdown 文档 | ✅ 13 份，覆盖方案 / 需求 / 设计 / 过程 / Git / 部署 / 维护 / 测试 / 待填 / 规划 / 学生优惠 / Pages / 登录 |
 | Git 版本管理 | ✅ 已初始化并按阶段提交，提交信息见 `docs/04` |
-| GitHub Pages 部署 | ⏳ 框架已搭好（Actions + .nojekyll），待注册账号、建 `用户名.github.io` 仓库后推送，见 `docs/11` |
+| GitHub Pages 部署 | ⏳ 框架已搭好（branch 部署 + .nojekyll），待推送到 `用户名.github.io` 仓库并启用 Pages，见 `docs/11` |
 | 云服务器部署 | ⏳ 脚本已备好（`deploy/`），待买服务器后按 `docs/10` 购买、`docs/05` 部署 |
 
 ### 老师五条要求的达成情况
