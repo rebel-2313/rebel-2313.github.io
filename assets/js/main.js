@@ -456,11 +456,16 @@
     card.appendChild(actions);
 
     if (hasList(c.links)) {
-      card.appendChild(el('ul', { class: 'link-list' }, c.links.map(function (link) {
-        return el('li', {}, [
-          el('a', { href: link.href, target: '_blank', rel: 'noopener', text: link.label + ' ↗' })
-        ]);
-      })));
+      /* v3：只渲染填了地址的链接。以前 href 留空会生成一个点了没反应的
+         「死链接」，或者残留 yourname 这种占位地址，看起来像没做完。 */
+      var validLinks = c.links.filter(function (link) { return link && link.href; });
+      if (validLinks.length) {
+        card.appendChild(el('ul', { class: 'link-list' }, validLinks.map(function (link) {
+          return el('li', {}, [
+            el('a', { href: link.href, target: '_blank', rel: 'noopener', text: link.label + ' ↗' })
+          ]);
+        })));
+      }
     }
     if (c.note) card.appendChild(el('p', { class: 'contact-note', text: c.note }));
 
